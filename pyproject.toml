@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "my-project-demo"
+version = "0.1.0"
+description = "Final project"
+authors = ["Tatsiana Shahava <tanya.shagova@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+click = "^8.1.3"
+pandas = "^1.4.2"
+sklearn = "^0.0"
+mlflow = "^1.25.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+train = "my_project_demo.train:train"
+eda = "my_project_demo.eda:get_report"
