@@ -74,7 +74,10 @@ def train(
     use_scaler: bool,
     n_neighbors: int,
     weights: str,
-    metric: str
+    metric: str,
+    max_iter: int,
+    logreg_C: float,
+    model_type: str   
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
@@ -82,7 +85,10 @@ def train(
         test_split_ratio,
     )
     with mlflow.start_run():
-        pipeline = create_pipeline(use_scaler, n_neighbors, weights, metric)
+        if model_type == 'KNN':
+            pipeline = create_pipeline(use_scaler, n_neighbors, weights, metric)
+        elif model_type == 'LogReg':
+            pipeline = create_pipeline(use_scaler, max_iter, logreg_C, random_state)
         #pipeline.fit(features_train, target_train)
         cv_results = cross_validate(pipeline, features_train, target_train, 
                             cv=5,
