@@ -1,3 +1,4 @@
+from email.policy import default
 from pathlib import Path
 from joblib import dump
 
@@ -5,6 +6,7 @@ import numpy as np
 import click
 import mlflow
 import mlflow.sklearn
+from scipy.__config__ import show
 from sklearn.model_selection import  cross_validate
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
@@ -50,7 +52,7 @@ from .pipeline import create_pipeline, create_pipeline_reg
 )
 @click.option(
     "--use-scaler",
-    default=False,
+    default=True,
     type=bool,
     show_default=True,
 )
@@ -71,6 +73,12 @@ from .pipeline import create_pipeline, create_pipeline_reg
     default='minkowski',
     type=str,
     show_default=True,
+)
+@click.option(
+    "--max_iter",
+    default=1000,
+    type=int,
+    show_default=True
 )
 def train(
     dataset_path: Path,
