@@ -1,6 +1,7 @@
 from pathlib import Path
 from joblib import dump
 
+import numpy as np
 import click
 import mlflow
 import mlflow.sklearn
@@ -43,7 +44,7 @@ from .pipeline import create_pipeline
 )
 @click.option(
     "--use-scaler",
-    default=True,
+    default=False,
     type=bool,
     show_default=True,
 )
@@ -55,7 +56,7 @@ from .pipeline import create_pipeline
 )
 @click.option(
     "--weights",
-    default='uniform',
+    default='distance',
     type=str,
     show_default=True,
 )
@@ -104,21 +105,13 @@ def train(
     with mlflow.start_run():
         pipeline = create_pipeline(use_scaler, n_neighbors, weights, algorithm,  leaf_size, p, metric)
         #pipeline.fit(features_train, target_train)
-        cross_validate(pipeline, features_train, target_train, cv=5)
-        pred_val = pipeline.predict(features_val)
-        accuracy = accuracy_score(target_val, pred_val)
-        f1score = f1_score(target_val, pred_val, average='weighted')
-        precision = precision_score(target_val, pred_val, average='weighted')
-        mlflow.log_param("use_scaler", use_scaler)
-        mlflow.log_param("n_neighbors", n_neighbors)
-        mlflow.log_param("weights", weights)
-        mlflow.log_param("algorithm", algorithm)
-        mlflow.log_param("leaf_size", leaf_size)
-        mlflow.log_param("p", p)
-        mlflow.log_param("metric", metric)
-        mlflow.log_metric("accuracy", accuracy)
-        mlflow.log_metric("f1score", f1score)
-        mlflow.log_metric("precision", precision)
+        cv_results = cross_validate(pipeline, features_train, target_train, 
+                            cv=5,
+                            scoring=('accuracy', 'f1_weighted', 'precision_weighted')
+                            )
+        accuracy = np.mean(cv_results['test_accuracy'])
+        f1score = np.mean(cv_results['test_f1_weighted'])
+        precision = np.mean(cv_results['test_precision_weighted'])
         click.echo(f"Accuracy: {accuracy}.")
         click.echo(f"f1score: {f1score}.")
         click.echo(f"precision: {precision}")
