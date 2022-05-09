@@ -61,24 +61,6 @@ from .pipeline import create_pipeline
     show_default=True,
 )
 @click.option(
-    "--algorithm",
-    default='auto',
-    type=str,
-    show_default=True,
-)
-@click.option(
-    "--leaf_size",
-    default=30,
-    type=int,
-    show_default=True,
-)
-@click.option(
-    "--p",
-    default=2,
-    type=int,
-    show_default=True,
-)
-@click.option(
     "--metric",
     default='minkowski',
     type=str,
@@ -92,9 +74,6 @@ def train(
     use_scaler: bool,
     n_neighbors: int,
     weights: str,
-    algorithm: str,
-    leaf_size: int,
-    p: int,
     metric: str
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
@@ -103,7 +82,7 @@ def train(
         test_split_ratio,
     )
     with mlflow.start_run():
-        pipeline = create_pipeline(use_scaler, n_neighbors, weights, algorithm,  leaf_size, p, metric)
+        pipeline = create_pipeline(use_scaler, n_neighbors, weights, metric)
         #pipeline.fit(features_train, target_train)
         cv_results = cross_validate(pipeline, features_train, target_train, 
                             cv=5,
@@ -112,6 +91,13 @@ def train(
         accuracy = np.mean(cv_results['test_accuracy'])
         f1score = np.mean(cv_results['test_f1_weighted'])
         precision = np.mean(cv_results['test_precision_weighted'])
+        mlflow.log_param("use_scaler", use_scaler)
+        mlflow.log_param("n_neighbors", n_neighbors)
+        mlflow.log_param("weights", weights)
+        mlflow.log_param("metric", metric)
+        mlflow.log_metric("accuracy", accuracy)
+        mlflow.log_metric("f1score", f1score)
+        mlflow.log_metric("precision", precision)
         click.echo(f"Accuracy: {accuracy}.")
         click.echo(f"f1score: {f1score}.")
         click.echo(f"precision: {precision}")

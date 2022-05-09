@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 def create_pipeline(
-    use_scaler: bool, n_neighbors:int, weights: str, algorithm: str,  leaf_size: int, p:int, metric: str
+    use_scaler: bool, n_neighbors:int, weights: str,  metric:str
 ) -> Pipeline:
     pipeline_steps = []
     if use_scaler:
@@ -14,8 +14,7 @@ def create_pipeline(
         (
             "classifier",
             KNeighborsClassifier(
-                n_neighbors=n_neighbors, weights=weights, algorithm=algorithm,
-                leaf_size=leaf_size, p=p, metric=metric
+                n_neighbors=n_neighbors, weights=weights, metric=metric, p=1
             ),
         )
     )
