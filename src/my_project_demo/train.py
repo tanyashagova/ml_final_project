@@ -11,7 +11,6 @@ from sklearn.model_selection import  cross_validate
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import precision_score
-#from sklearn.metrics import log_loss
 
 from .data import get_dataset
 from .pipeline import create_pipeline, create_pipeline_reg
@@ -107,8 +106,14 @@ def train(
     with mlflow.start_run():
         if model_type == 'KNN':
             pipeline = create_pipeline(use_scaler, n_neighbors, weights, metric)
+            mlflow.log_param("n_neighbors", n_neighbors)
+            mlflow.log_param("weights", weights)
+            mlflow.log_param("metric", metric)
         elif model_type == 'LogReg':
             pipeline = create_pipeline_reg(use_scaler, max_iter, random_state, logregc)
+            mlflow.log_param("max_iter", max_iter)
+            mlflow.log_param("logreg_C", logregc)
+            mlflow.log_param("random_state", random_state)
         #pipeline.fit(features_train, target_train)
         cv_results = cross_validate(pipeline, features_train, target_train, 
                             cv=5,
@@ -119,12 +124,6 @@ def train(
         precision = np.mean(cv_results['test_precision_weighted'])
         mlflow.log_param("model_type", model_type)
         mlflow.log_param("use_scaler", use_scaler)
-        mlflow.log_param("n_neighbors", n_neighbors)
-        mlflow.log_param("weights", weights)
-        mlflow.log_param("metric", metric)
-        mlflow.log_param("max_iter", max_iter)
-        mlflow.log_param("logreg_C", logregc)
-        mlflow.log_param("random_state", random_state)
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1score", f1score)
         mlflow.log_metric("precision", precision)
