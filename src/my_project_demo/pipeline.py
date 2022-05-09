@@ -24,7 +24,7 @@ def create_pipeline(
     )
     return Pipeline(steps=pipeline_steps)
 
-def create_pipline_reg(
+def create_pipeline_reg(
     use_scaler:bool, max_iter: int, logreg_C: float, random_state: int
 ) -> Pipeline:
     pipeline_steps = []
