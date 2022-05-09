@@ -78,7 +78,13 @@ from .pipeline import create_pipeline, create_pipeline_reg
     "--max_iter",
     default=1000,
     type=int,
-    show_default=True
+    show_default=True,
+)
+@click.option(
+    "--logreg_C",
+    default=1.0,
+    type=float,
+    show_default=True,
 )
 def train(
     dataset_path: Path,
