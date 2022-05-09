@@ -81,7 +81,7 @@ from .pipeline import create_pipeline, create_pipeline_reg
     show_default=True,
 )
 @click.option(
-    "--logreg_C",
+    "--logregc",
     default=1.0,
     type=float,
     show_default=True,
@@ -95,9 +95,9 @@ def train(
     n_neighbors: int,
     weights: str,
     metric: str,
+    logregc: float, 
     max_iter: int,
-    logreg_C: float,
-    model_type: str   
+    model_type: str,  
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
@@ -108,7 +108,7 @@ def train(
         if model_type == 'KNN':
             pipeline = create_pipeline(use_scaler, n_neighbors, weights, metric)
         elif model_type == 'LogReg':
-            pipeline = create_pipeline_reg(use_scaler, max_iter, logreg_C, random_state)
+            pipeline = create_pipeline_reg(use_scaler, max_iter, random_state, logregc)
         #pipeline.fit(features_train, target_train)
         cv_results = cross_validate(pipeline, features_train, target_train, 
                             cv=5,
@@ -123,7 +123,7 @@ def train(
         mlflow.log_param("weights", weights)
         mlflow.log_param("metric", metric)
         mlflow.log_param("max_iter", max_iter)
-        mlflow.log_param("logreg_C", logreg_C)
+        mlflow.log_param("logreg_C", logregc)
         mlflow.log_param("random_state", random_state)
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1score", f1score)

@@ -1,7 +1,4 @@
-#from sklearn.linear_model import LogisticRegression
-from distutils.log import Log
-from scipy import rand
-from sklearn import pipeline
+from sys import float_repr_style
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
@@ -9,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 def create_pipeline(
-    use_scaler: bool, n_neighbors:int, weights: str,  metric:str,
+    use_scaler: bool, n_neighbors: int, weights: str,  metric: str,
 ) -> Pipeline:
     pipeline_steps = []
     if use_scaler:
@@ -25,7 +22,7 @@ def create_pipeline(
     return Pipeline(steps=pipeline_steps)
 
 def create_pipeline_reg(
-    use_scaler:bool, max_iter: int, logreg_C: float, random_state: int
+    use_scaler:bool, max_iter: int, random_state: int,  logregc: float,
 ) -> Pipeline:
     pipeline_steps = []
     if use_scaler:
@@ -34,7 +31,7 @@ def create_pipeline_reg(
         (
             "classifier",
             LogisticRegression(
-                max_iter=max_iter, logreg_C=logreg_C, random_state=random_state
+                max_iter=max_iter, random_state=random_state, C=logregc
             ),
         )
     )
