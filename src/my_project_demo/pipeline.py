@@ -1,4 +1,3 @@
-from sys import float_repr_style
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline

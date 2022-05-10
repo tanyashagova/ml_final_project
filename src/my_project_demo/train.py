@@ -1,5 +1,6 @@
 from email.policy import default
 from pathlib import Path
+from xml.sax.handler import feature_external_ges
 from joblib import dump
 
 import numpy as np
@@ -11,6 +12,10 @@ from sklearn.model_selection import  cross_validate
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import precision_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.feature_selection import SelectFromModel
+from sklearn.decomposition import PCA
 
 from .data import get_dataset
 from .pipeline import create_pipeline, create_pipeline_reg
@@ -115,13 +120,33 @@ def train(
             mlflow.log_param("logreg_C", logregc)
             mlflow.log_param("random_state", random_state)
         #pipeline.fit(features_train, target_train)
-        cv_results = cross_validate(pipeline, features_train, target_train, 
+        feature_eng = 2
+
+        if feature_eng == 0:
+            cv_results = cross_validate(pipeline, features_train, target_train, 
                             cv=5,
                             scoring=('accuracy', 'f1_weighted', 'precision_weighted')
                             )
+        elif feature_eng == 1:
+            selection_model = RandomForestClassifier(random_state=42)
+            pipe_selection = make_pipeline(SelectFromModel(selection_model), pipeline)
+            cv_results = cross_validate(pipe_selection, features_train, target_train, 
+                            cv=5,
+                            scoring=('accuracy', 'f1_weighted', 'precision_weighted')
+                            )
+        elif feature_eng == 2:
+            train_tranc = PCA(n_components=35, random_state=42).fit_transform(features_train)
+            click.echo(f"tranc shape: {train_tranc.shape}.")
+            cv_results = cross_validate(pipeline, train_tranc, target_train, 
+                            cv=5,
+                            scoring=('accuracy', 'f1_weighted', 'precision_weighted')
+                            )        
+        
+        
         accuracy = np.mean(cv_results['test_accuracy'])
         f1score = np.mean(cv_results['test_f1_weighted'])
         precision = np.mean(cv_results['test_precision_weighted'])
+        mlflow.log_param("feat_engeen", feature_eng)
         mlflow.log_param("model_type", model_type)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_metric("accuracy", accuracy)
@@ -129,6 +154,6 @@ def train(
         mlflow.log_metric("precision", precision)
         click.echo(f"Accuracy: {accuracy}.")
         click.echo(f"f1score: {f1score}.")
-        click.echo(f"precision: {precision}")
+        click.echo(f"precision: {precision}.")
         dump(pipeline, save_model_path)
         click.echo(f"Model is saved to {save_model_path}.")
