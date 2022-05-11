@@ -14,7 +14,8 @@ from my_project_demo.pipeline import create_pipeline
 
 
 from .data import get_dataset
-#from .pipeline import create_pipeline, create_pipeline_reg
+
+# from .pipeline import create_pipeline, create_pipeline_reg
 
 
 @click.command()
@@ -49,12 +50,12 @@ def grid_ncv(
     save_model_path: Path,
     random_state: int,
     test_split_ratio: float,
-) ->  None:
+) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
-         dataset_path,
-         random_state,
-         test_split_ratio,
-     )
+        dataset_path,
+        random_state,
+        test_split_ratio,
+    )
     # configure the cross-validation procedure
     cv_outer = KFold(n_splits=6, shuffle=True, random_state=42)
     # enumerate splits
@@ -68,13 +69,13 @@ def grid_ncv(
         # configure the cross-validation procedure
         cv_inner = KFold(n_splits=5, shuffle=True, random_state=42)
         # define the model
-        model = KNeighborsClassifier(weights='distance', p=1)
+        model = KNeighborsClassifier(weights="distance", p=1)
         # define search space
         space = dict()
-        space['n_neighbors'] = [3, 4, 5, 7]
-        space['metric'] = ['minkowski', 'euclidean']
+        space["n_neighbors"] = [3, 4, 5, 7]
+        space["metric"] = ["minkowski", "euclidean"]
         # define search
-        search = GridSearchCV(model, space, scoring='accuracy', cv=cv_inner, refit=True)
+        search = GridSearchCV(model, space, scoring="accuracy", cv=cv_inner, refit=True)
         # execute search
         result = search.fit(X_train, y_train)
         # get the best performing model fit on the whole training set
@@ -86,25 +87,28 @@ def grid_ncv(
         # store the result
         outer_results.append(acc)
         # report progress
-        click.echo('>acc=%.3f, est=%.3f, cfg=%s' % (acc, result.best_score_, result.best_params_))
+        click.echo(
+            ">acc=%.3f, est=%.3f, cfg=%s"
+            % (acc, result.best_score_, result.best_params_)
+        )
         # summarize the estimated performance of the model
-    click.echo(f'Accuracy: {np.mean(outer_results)}')
-    click.echo(f'Trained model with best parameters')
-    pipeline = create_pipeline(use_scaler=False, n_neighbors=4, weights='distance',  metric='minkowski')
+    click.echo(f"Accuracy: {np.mean(outer_results)}")
+    click.echo(f"Trained model with best parameters")
+    pipeline = create_pipeline(
+        use_scaler=False, n_neighbors=4, weights="distance", metric="minkowski"
+    )
     pipeline.fit(features_train, target_train)
     pred_val = pipeline.predict(features_val)
     accuracy = accuracy_score(target_val, pred_val)
-    f1score = f1_score(target_val, pred_val, average='weighted')
-    precision = precision_score(target_val, pred_val, average='weighted')
-    click.echo(f'Accuracy: {accuracy}')
-    click.echo(f'f1score: {f1score}')
-    click.echo(f'precision: {precision}')
+    f1score = f1_score(target_val, pred_val, average="weighted")
+    precision = precision_score(target_val, pred_val, average="weighted")
+    click.echo(f"Accuracy: {accuracy}")
+    click.echo(f"f1score: {f1score}")
+    click.echo(f"precision: {precision}")
 
-    #train model with whole dataset
+    # train model with whole dataset
     data = pd.concat([features_train, features_val])
     target = pd.concat([target_train, target_val])
     pipeline.fit(data, target)
     dump(pipeline, save_model_path)
     click.echo(f"Model is saved to {save_model_path}.")
-
-

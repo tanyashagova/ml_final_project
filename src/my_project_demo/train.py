@@ -6,7 +6,7 @@ import click
 import mlflow
 import mlflow.sklearn
 from scipy.__config__ import show
-from sklearn.model_selection import  cross_validate
+from sklearn.model_selection import cross_validate
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import precision_score
@@ -48,7 +48,7 @@ from .pipeline import create_pipeline, create_pipeline_reg
 )
 @click.option(
     "--model-type",
-    default='KNN',
+    default="KNN",
     type=str,
     show_default=True,
 )
@@ -66,13 +66,13 @@ from .pipeline import create_pipeline, create_pipeline_reg
 )
 @click.option(
     "--weights",
-    default='distance',
+    default="distance",
     type=str,
     show_default=True,
 )
 @click.option(
     "--metric",
-    default='minkowski',
+    default="minkowski",
     type=str,
     show_default=True,
 )
@@ -103,10 +103,10 @@ def train(
     n_neighbors: int,
     weights: str,
     metric: str,
-    logregc: float, 
+    logregc: float,
     max_iter: int,
     model_type: str,
-    feature_eng: int,  
+    feature_eng: int,
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
@@ -114,41 +114,52 @@ def train(
         test_split_ratio,
     )
     with mlflow.start_run():
-        if model_type == 'KNN':
+        if model_type == "KNN":
             pipeline = create_pipeline(use_scaler, n_neighbors, weights, metric)
             mlflow.log_param("n_neighbors", n_neighbors)
             mlflow.log_param("weights", weights)
             mlflow.log_param("metric", metric)
-        elif model_type == 'LogReg':
+        elif model_type == "LogReg":
             pipeline = create_pipeline_reg(use_scaler, max_iter, random_state, logregc)
             mlflow.log_param("max_iter", max_iter)
             mlflow.log_param("logreg_C", logregc)
             mlflow.log_param("random_state", random_state)
-        #feature enginering
-        if feature_eng == 0: #Use StandardScaler (both true & false)
-            cv_results = cross_validate(pipeline, features_train, target_train, 
-                            cv=5,
-                            scoring=('accuracy', 'f1_weighted', 'precision_weighted')
-                            )
-        elif feature_eng == 1:# Selection feature from RandomForestClassifier model
+        # feature enginering
+        if feature_eng == 0:  # Use StandardScaler (both true & false)
+            cv_results = cross_validate(
+                pipeline,
+                features_train,
+                target_train,
+                cv=5,
+                scoring=("accuracy", "f1_weighted", "precision_weighted"),
+            )
+        elif feature_eng == 1:  # Selection feature from RandomForestClassifier model
             selection_model = RandomForestClassifier(random_state=42)
             pipe_selection = make_pipeline(SelectFromModel(selection_model), pipeline)
-            cv_results = cross_validate(pipe_selection, features_train, target_train, 
-                            cv=5,
-                            scoring=('accuracy', 'f1_weighted', 'precision_weighted')
-                            )
-        elif feature_eng == 2:# PCA with 35 components
-            train_tranc = PCA(n_components=35, random_state=42).fit_transform(features_train)
+            cv_results = cross_validate(
+                pipe_selection,
+                features_train,
+                target_train,
+                cv=5,
+                scoring=("accuracy", "f1_weighted", "precision_weighted"),
+            )
+        elif feature_eng == 2:  # PCA with 35 components
+            train_tranc = PCA(n_components=35, random_state=42).fit_transform(
+                features_train
+            )
             click.echo(f"tranc shape: {train_tranc.shape}.")
-            cv_results = cross_validate(pipeline, train_tranc, target_train, 
-                            cv=5,
-                            scoring=('accuracy', 'f1_weighted', 'precision_weighted')
-                            )        
-        
-        #metrics values 
-        accuracy = np.mean(cv_results['test_accuracy'])
-        f1score = np.mean(cv_results['test_f1_weighted'])
-        precision = np.mean(cv_results['test_precision_weighted'])
+            cv_results = cross_validate(
+                pipeline,
+                train_tranc,
+                target_train,
+                cv=5,
+                scoring=("accuracy", "f1_weighted", "precision_weighted"),
+            )
+
+        # metrics values
+        accuracy = np.mean(cv_results["test_accuracy"])
+        f1score = np.mean(cv_results["test_f1_weighted"])
+        precision = np.mean(cv_results["test_precision_weighted"])
         mlflow.log_param("feat_engeen", feature_eng)
         mlflow.log_param("model_type", model_type)
         mlflow.log_param("use_scaler", use_scaler)

@@ -14,10 +14,8 @@ import pandas as pd
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     show_default=True,
 )
-def get_report(
-    dataset_path: Path
-    )-> None:
-    dataset = pd.read_csv(dataset_path).set_index('Id')
+def get_report(dataset_path: Path) -> None:
+    dataset = pd.read_csv(dataset_path).set_index("Id")
     profile = ProfileReport(dataset, title="Pandas Profiling Report")
-    profile.to_file("eda_report.html")   
-    #return profile
+    profile.to_file("eda_report.html")
+    # return profile
