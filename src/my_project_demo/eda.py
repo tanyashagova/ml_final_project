@@ -1,6 +1,5 @@
 from pandas_profiling import ProfileReport
 from pathlib import Path
-from typing import Tuple
 
 import click
 import pandas as pd
