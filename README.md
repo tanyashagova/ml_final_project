@@ -39,3 +39,7 @@ Grid search and Nested cross-validation were used for tuning hyperparameters and
   ![Best parameters train](https://github.com/tanyashagova/ml_final_project/blob/main/best_param_train.png)
 
   Finaly the model with best hyperparameters was trained on whole dataset.
+
+
+  Code was formated with black
+  ![Black](https://github.com/tanyashagova/ml_final_project/blob/main/black.png)
