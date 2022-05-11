@@ -1,13 +1,17 @@
+from joblib import dump
 from pathlib import Path
 import click
-from multimethod import distance
 
 import numpy as np
+import pandas as pd
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import precision_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import GridSearchCV, KFold
+
+from my_project_demo.pipeline import create_pipeline
+
 
 from .data import get_dataset
 #from .pipeline import create_pipeline, create_pipeline_reg
@@ -19,6 +23,13 @@ from .data import get_dataset
     "--dataset-path",
     default="data/train.csv",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
+    show_default=True,
+)
+@click.option(
+    "-s",
+    "--save-model-path",
+    default="data/model.joblib",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
 @click.option(
@@ -35,6 +46,7 @@ from .data import get_dataset
 )
 def grid_ncv(
     dataset_path: Path,
+    save_model_path: Path,
     random_state: int,
     test_split_ratio: float,
 ) ->  None:
@@ -78,14 +90,21 @@ def grid_ncv(
         # summarize the estimated performance of the model
     click.echo(f'Accuracy: {np.mean(outer_results)}')
     click.echo(f'Trained model with best parameters')
-    model = KNeighborsClassifier(n_neighbors=4, metric='minkowski', weights='distance', p=1)
-    model.fit(features_train, target_train)
-    pred_val = model.predict(features_val)
+    pipeline = create_pipeline(use_scaler=False, n_neighbors=4, weights='distance',  metric='minkowski')
+    pipeline.fit(features_train, target_train)
+    pred_val = pipeline.predict(features_val)
     accuracy = accuracy_score(target_val, pred_val)
     f1score = f1_score(target_val, pred_val, average='weighted')
     precision = precision_score(target_val, pred_val, average='weighted')
     click.echo(f'Accuracy: {accuracy}')
     click.echo(f'f1score: {f1score}')
     click.echo(f'precision: {precision}')
+
+    #train model with whole dataset
+    data = pd.concat([features_train, features_val])
+    target = pd.concat([target_train, target_val])
+    pipeline.fit(data, target)
+    dump(pipeline, save_model_path)
+    click.echo(f"Model is saved to {save_model_path}.")
 
 
