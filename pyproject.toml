@@ -21,3 +21,4 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 train = "my_project_demo.train:train"
 eda = "my_project_demo.eda:get_report"
+grid_ncv = "my_project_demo.grid_NCV:grid_ncv"
