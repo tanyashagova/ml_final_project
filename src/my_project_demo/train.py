@@ -88,6 +88,12 @@ from .pipeline import create_pipeline, create_pipeline_reg
     type=float,
     show_default=True,
 )
+@click.option(
+    "--feature_eng",
+    default=0,
+    type=int,
+    show_default=True,
+)
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -99,7 +105,8 @@ def train(
     metric: str,
     logregc: float, 
     max_iter: int,
-    model_type: str,  
+    model_type: str,
+    feature_eng: int,  
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
@@ -118,8 +125,6 @@ def train(
             mlflow.log_param("logreg_C", logregc)
             mlflow.log_param("random_state", random_state)
         #feature enginering
-        feature_eng = 2
-
         if feature_eng == 0: #Use StandardScaler (both true & false)
             cv_results = cross_validate(pipeline, features_train, target_train, 
                             cv=5,
