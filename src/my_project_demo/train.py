@@ -117,22 +117,22 @@ def train(
             mlflow.log_param("max_iter", max_iter)
             mlflow.log_param("logreg_C", logregc)
             mlflow.log_param("random_state", random_state)
-        #pipeline.fit(features_train, target_train)
+        #feature enginering
         feature_eng = 2
 
-        if feature_eng == 0:
+        if feature_eng == 0: #Use StandardScaler (both true & false)
             cv_results = cross_validate(pipeline, features_train, target_train, 
                             cv=5,
                             scoring=('accuracy', 'f1_weighted', 'precision_weighted')
                             )
-        elif feature_eng == 1:
+        elif feature_eng == 1:# Selection feature from RandomForestClassifier model
             selection_model = RandomForestClassifier(random_state=42)
             pipe_selection = make_pipeline(SelectFromModel(selection_model), pipeline)
             cv_results = cross_validate(pipe_selection, features_train, target_train, 
                             cv=5,
                             scoring=('accuracy', 'f1_weighted', 'precision_weighted')
                             )
-        elif feature_eng == 2:
+        elif feature_eng == 2:# PCA with 35 components
             train_tranc = PCA(n_components=35, random_state=42).fit_transform(features_train)
             click.echo(f"tranc shape: {train_tranc.shape}.")
             cv_results = cross_validate(pipeline, train_tranc, target_train, 
@@ -140,7 +140,7 @@ def train(
                             scoring=('accuracy', 'f1_weighted', 'precision_weighted')
                             )        
         
-        
+        #metrics values 
         accuracy = np.mean(cv_results['test_accuracy'])
         f1score = np.mean(cv_results['test_f1_weighted'])
         precision = np.mean(cv_results['test_precision_weighted'])
