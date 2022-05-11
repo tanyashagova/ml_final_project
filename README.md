@@ -24,6 +24,18 @@ poetry run train --help
 ```sh
 poetry run mlflow ui
 ```
+For model validating I used next three metrics: accuracy, f1 score and precision. In train K-fold cross-validation is used. 
+The results of expetiments and  values of metrics were tracked into MLFlow. The screenshof of the results is below.
+Scaling, PCA, and feature selection were used for feature engineering.  
  ![MLFlow experiments example](https://github.com/tanyashagova/ml_final_project/blob/main/mlflow_experiments_runs.png)
 
+
+KNeighborsClassifier model was chosen for next manipulation because of the highest value of accuracy achived during experiments. Further investigation and training were conducted in the grid_NSV. Use help for running:
+```sh
+poetry run grid_ncv --help
+```
+Grid search and Nested cross-validation were used for tuning hyperparameters and model selection. The screenshot below demonstrates metrics values with the best parameters.
+
   ![Best parameters train](https://github.com/tanyashagova/ml_final_project/blob/main/best_param_train.png)
+
+  Finaly the model with best hyperparameters was trained on whole dataset.
